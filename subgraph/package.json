@@ -1,0 +1,19 @@
+{
+  "name": "subgraph",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon src/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@apollo/server": "^4.10.2",
+    "@apollo/subgraph": "^2.7.2",
+    "graphql": "^16.8.1",
+    "nodemon": "^3.1.0"
+  }
+}

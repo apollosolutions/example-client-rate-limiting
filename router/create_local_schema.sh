@@ -1,0 +1,1 @@
+rover supergraph compose --config ./supergraph.yaml --output schema.graphql

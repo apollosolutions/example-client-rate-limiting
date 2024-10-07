@@ -1,0 +1,7 @@
+federation_version: =2.3.2
+subgraphs:
+  # Subgraph introspection
+  subgraph:
+    routing_url: http://localhost:4001 # <- can be omitted if the same as introspection URL
+    schema:
+      subgraph_url: http://localhost:4001
