@@ -7,7 +7,7 @@ This repository demonstrates how to setup a skeleton coprocessor that simply log
 > Note: To run this example, you will need a GraphOS Enterprise plan and must create `/router/.env` based on `/router/.env.example` which exports `APOLLO_KEY` and `APOLLO_GRAPH_REF`.
 
 1. Run the subgraph from the `/subgraph` directory with `npm run dev`
-1. Run the coprocessor based on your language of choice by following the README from the appropriate `/*-coprocessor` directory ([javascript](./js-coprocessor/README.md), [Java](./java-coprocessor/README.md), [golang](./golang-coprocessor/README.md)).
+2. Run the coprocessor in the `/coprocessor` directory with `npm run dev`
 1. In the `/router` directory, download the router by running `./download_router.sh`
 1. In the `/router` directory, compose the schema by running `./create_local_schema.sh`
 1. In the `/router` directory, run the router by running `./start_router.sh`
