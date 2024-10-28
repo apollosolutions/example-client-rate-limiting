@@ -1,7 +1,12 @@
 # $schema: configuration_schema.json
+telemetry:
+  instrumentation:
+    spans:
+      mode: spec_compliant
 
 coprocessor:
   url: http://localhost:3007
-  router:
+  supergraph:
     request:
       headers: true
+      context: true
