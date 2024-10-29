@@ -9,11 +9,11 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
-    "@apollo/server": "^4.10.2",
-    "@apollo/subgraph": "^2.7.2",
-    "graphql": "^16.8.1",
-    "nodemon": "^3.1.0"
+    "@apollo/server": "^4.11.0",
+    "@apollo/subgraph": "^2.9.3",
+    "graphql": "^16.9.0",
+    "nodemon": "^3.1.7"
   }
 }
