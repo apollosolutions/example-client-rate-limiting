@@ -18,7 +18,7 @@ const ratelimit = new Ratelimit({
   redis: redis,
   limiter: Ratelimit.slidingWindow(3, "10 s"),
   analytics: true,
-  enableProtection: false,
+  enableProtection: true,
 });
 
 // This is currently a fixed value decided by Router
