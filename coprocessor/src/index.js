@@ -1,4 +1,4 @@
-import express from "express";
+import express, {response} from "express";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 
@@ -14,7 +14,7 @@ const redis = new Redis({
  * This class only accepts an Upstash Redis instance,
  * but you can see how the logic applies below
  */
-const ratelimit = new Ratelimit({
+const rateLimit = new Ratelimit({
   redis: redis,
   limiter: Ratelimit.slidingWindow(3, "10 s"),
   analytics: true,
@@ -60,8 +60,6 @@ const getOperationName = (payload) => {
  * Process and validate each request to apply a rate limit
  */
 const processSupergraphRequestStage = async (payload) => {
-  console.log(payload);
-
   const clientName = getClientName(payload);
   const operationName = getOperationName(payload);
 
@@ -87,24 +85,34 @@ const processSupergraphRequestStage = async (payload) => {
     return payload;
   }
 
-  console.log(`Request from client ${clientName}. Applying rate limit...`);
-  const { success } = await ratelimit.limit(clientName);
+  console.log(`Request from client '${clientName}'. Applying rate limit...`);
 
-  if (!success) {
+  // To apply a custom rate, you could change the logic to pass in the `cost` or wait for the `SupergraphResponse`
+  // and decide how much rate to subtract instead of just a fixed amount.
+  // See more details at: https://upstash.com/docs/redis/sdks/ratelimit-ts/methods
+  const rateLimitResponse = await rateLimit.limit(clientName);
+
+  if (!rateLimitResponse.success) {
     payload.control = { break: 429 };
-    payload.body = {
-      errors: [
-        {
-          message: `Rate limit exceeded for client ${clientName}`,
-          extensions: {
-            code: "RATE_LIMIT_EXCEED",
-          }
+    let errors = payload.body.errors || [];
+    errors.push({
+      message: `Rate limit exceeded for client: ${clientName}`,
+      extensions: {
+        code: "RATE_LIMIT_EXCEED",
+        rateLimit: {
+          clientName,
+          limit: rateLimitResponse.limit,
+          remaining: rateLimitResponse.remaining,
+          reset: rateLimitResponse.reset
         }
-      ]
-    };
+      }
+    });
+    payload.body.errors = errors;
 
     return payload;
   }
+
+  // Do other stuff in coprocessor if needed below...
 
   return payload;
 };
