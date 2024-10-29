@@ -1,4 +1,4 @@
-import express, {response} from "express";
+import express from "express";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 
