@@ -1,7 +1,7 @@
 federation_version: =2.9.0
 subgraphs:
-  # Subgraph introspection
   subgraph:
-    routing_url: http://localhost:4001 # <- can be omitted if the same as introspection URL
+    routing_url: http://localhost:4001
     schema:
-      subgraph_url: http://localhost:4001
+      file: ../subgraph/src/schema.graphql
+

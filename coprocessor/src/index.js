@@ -1,13 +1,24 @@
 import express from "express";
-
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 
+/**
+ * We are using a free plan on upstash.com
+ */
+const redis = new Redis({
+  url: process.env['UPSTASH_REDIS_REST_URL'],
+  token: process.env['UPSTASH_REDIS_REST_TOKEN'],
+});
+
+/**
+ * This class only accepts an Upstash Redis instance,
+ * but you can see how the logic applies below
+ */
 const ratelimit = new Ratelimit({
-  redis: Redis.fromEnv(),
-  limiter: Ratelimit.slidingWindow(10, "10 s"),
+  redis: redis,
+  limiter: Ratelimit.slidingWindow(3, "10 s"),
   analytics: true,
-  enableProtection: true
+  enableProtection: true,
 });
 
 // This is currently a fixed value decided by Router
@@ -38,16 +49,29 @@ const getClientName = (payload) => {
   return undefined;
 };
 
+/**
+ * Operation name to help identify other types of requests like Introspection
+ */
 const getOperationName = (payload) => {
   return payload?.context?.entries?.['operation_name'];
 };
 
+/**
+ * Process and validate each request to apply a rate limit
+ */
 const processSupergraphRequestStage = async (payload) => {
   console.log(payload);
 
   const clientName = getClientName(payload);
   const operationName = getOperationName(payload);
-  if (!clientName && operationName !== 'IntrospectionQuery') {
+
+  // Do not fail or rate limit introspection queries
+  if (operationName === 'IntrospectionQuery') {
+    return payload;
+  }
+
+  // Make sure we have a client name to apply a rate limit to
+  if (!clientName) {
     payload.control = { break: 400 };
     payload.body = {
       errors: [
@@ -63,7 +87,9 @@ const processSupergraphRequestStage = async (payload) => {
     return payload;
   }
 
+  console.log(`Request from client ${clientName}. Applying rate limit...`);
   const { success } = await ratelimit.limit(clientName);
+
   if (!success) {
     payload.control = { break: 429 };
     payload.body = {
@@ -83,6 +109,9 @@ const processSupergraphRequestStage = async (payload) => {
   return payload;
 };
 
+/**
+ * Set up the coprocessor server endpoint
+ */
 app.post("/", express.json(), async (req, res) => {
   const payload = req.body;
 
@@ -96,6 +125,9 @@ app.post("/", express.json(), async (req, res) => {
   res.send(response);
 });
 
+/**
+ * Start the coprocessor server
+ */
 app.listen(3007, () => {
-  console.log("🚀 Server running at http://localhost:3007");
+  console.log("🚀 Coprocessor running at http://localhost:3007");
 });
