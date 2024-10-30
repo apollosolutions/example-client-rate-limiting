@@ -3,6 +3,9 @@ const resolvers = {
     hello: () => {
       return "Hello World!";
     },
+    helloExpensive: () => {
+      return "Hello from a really big world!";
+    },
   },
 };
 
