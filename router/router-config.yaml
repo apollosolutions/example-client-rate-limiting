@@ -4,9 +4,20 @@ telemetry:
     spans:
       mode: spec_compliant
 
+demand_control:
+  enabled: true
+  mode: measure
+  strategy:
+    static_estimated:
+      list_size: 10
+      max: 100
+
 coprocessor:
   url: http://localhost:3007
   supergraph:
     request:
+      headers: true
+      context: true
+    response:
       headers: true
       context: true

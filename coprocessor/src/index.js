@@ -61,12 +61,6 @@ const getOperationName = (payload) => {
  */
 const processSupergraphRequestStage = async (payload) => {
   const clientName = getClientName(payload);
-  const operationName = getOperationName(payload);
-
-  // Do not fail or rate limit introspection queries
-  if (operationName === 'IntrospectionQuery') {
-    return payload;
-  }
 
   // Make sure we have a client name to apply a rate limit to
   if (!clientName) {
@@ -118,16 +112,38 @@ const processSupergraphRequestStage = async (payload) => {
 };
 
 /**
+ * Process and validate each response to apply a rate limit after the fact
+ */
+const processSupergraphResponseStage = async (payload) => {
+  const actualCost = payload?.context?.entries?.['cost.actual'];
+  const costResult = payload?.context?.entries?.['cost.result'];
+
+  console.log("In SupegraphResponse cost is:", actualCost, costResult);
+
+  // If you wanted to apply custom rate limiting consumption here you could do so after the fact...
+  //const rateLimitResponse = await rateLimit.limit(clientName, { rate: actualCost });
+
+  return payload;
+};
+
+/**
  * Set up the coprocessor server endpoint
  */
 app.post("/", express.json(), async (req, res) => {
   const payload = req.body;
-
+  const operationName = getOperationName(payload);
   let response = payload;
-  switch (payload.stage) {
-    case "SupergraphRequest":
-      response = await processSupergraphRequestStage(payload);
-      break;
+
+  // Do not validate or change introspection queries
+  if (operationName !== 'IntrospectionQuery') {
+    switch (payload.stage) {
+      case "SupergraphRequest":
+        response = await processSupergraphRequestStage(payload);
+        break;
+      case "SupergraphResponse":
+        response = await processSupergraphResponseStage(payload);
+        break;
+    }
   }
 
   res.send(response);
